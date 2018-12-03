@@ -1,5 +1,9 @@
 import React from "react";
-import { TabNavigator, StackNavigator } from "react-navigation";
+import {
+  createBottomTabNavigator,
+  createStackNavigator,
+  createAppContainer
+} from "react-navigation";
 import { Icon } from "react-native-elements";
 
 import Feed from "../screens/Feed";
@@ -7,7 +11,7 @@ import Me from "../screens/Me";
 import UserDetail from "../screens/UserDetail";
 import Settings from "../screens/Settings";
 
-export const FeedStack = StackNavigator({
+const FeedStack = createStackNavigator({
   Feed: {
     screen: Feed,
     navigationOptions: {
@@ -16,36 +20,43 @@ export const FeedStack = StackNavigator({
   },
   UserDetail: {
     screen: UserDetail,
-    navigationOptions: {
-      title: ({ state }) => {
-        return `${state.params.name.first.toUpperCase()} ${state.params.name.last.toUpperCase()}`;
-      }
-    }
+    navigationOptions: ({ navigation }) => ({
+      title: `${navigation.state.params.name.first.toUpperCase()} ${navigation.state.params.name.last.toUpperCase()}`
+    })
   }
 });
 
-export const Tabs = TabNavigator({
-  Feed: {
-    screen: FeedStack,
-    navigationOptions: {
-      tabBar: {
-        label: "Feed",
-        icon: () => <Icon name="list" size={35} color={"red"} />
-      }
-    }
+const Tabs = createBottomTabNavigator(
+  {
+    Feed: FeedStack,
+    Me: Me
   },
-  Me: {
-    screen: Me,
-    navigationOptions: {
-      tabBar: {
-        label: "Me",
-        icon: () => <Icon name="account-circle" size={35} color={"red"} />
+  {
+    defaultNavigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, horizontal, tintColor }) => {
+        const { routeName } = navigation.state;
+        let iconName;
+        if (routeName === "Feed") {
+          iconName = `list`;
+        } else if (routeName === "Me") {
+          iconName = `account-circle`;
+        }
+
+        // You can return any component that you like here! We usually use an
+        // icon component from react-native-vector-icons
+        return (
+          <Icon name={iconName} size={horizontal ? 20 : 25} color={tintColor} />
+        );
       }
+    }),
+    tabBarOptions: {
+      activeTintColor: "tomato",
+      inactiveTintColor: "gray"
     }
   }
-});
+);
 
-export const SettingStack = StackNavigator({
+const SettingsStack = createStackNavigator({
   Settings: {
     screen: Settings,
     navigationOptions: {
@@ -54,7 +65,7 @@ export const SettingStack = StackNavigator({
   }
 });
 
-export const Root = StackNavigator({
+const Root = createStackNavigator({
   Tabs: {
     screen: Tabs
   },
@@ -66,3 +77,5 @@ export const Root = StackNavigator({
   // 	  headerMode: 'none'
   //   }
 });
+
+export default createAppContainer(Root);
